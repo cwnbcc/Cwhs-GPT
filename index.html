@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>청원-GPT</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #f0f0f0;
+        }
+
+        #title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        #container {
+            display: flex;
+            width: 60%;
+            max-width: 800px;
+            height: 70%;
+        }
+
+        #notice {
+            width: 20%;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #notice-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #notice p {
+            margin: 0;
+            font-size: 14px;
+            color: #ff0000;
+            font-weight: bold;
+        }
+
+        #chat-container {
+            width: 80%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message-container {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.chatbot {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            border-radius: 10px;
+            padding: 10px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-bubble {
+            background-color: #d3e0dc;
+            align-self: flex-end;
+            margin-left: auto;
+            /* 사용자 메시지를 오른쪽에 배열 */
+        }
+
+        .message.chatbot .message-bubble {
+            background-color: #eaeaea;
+            align-self: flex-start;
+            display: flex;
+            align-items: center;
+        }
+
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        #user-input {
+            width: 60%;
+            max-width: 800px;
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #a5a5a5;
+            background: white;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #user-input input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        #user-input button {
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            background: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #user-input button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="title">청원-GPT</div>
+    <div id="container">
+        <div id="notice">
+            <div id="notice-title">주의사항</div>
+            <p>영어로만 대화 가능</p>
+            <p>한국어는 잘 못해요^^</p>
+            <p>이해력도 떨어저요^^</p>
+            <p>생산적인 대화 불가능</p>
+            <p>아무말 대회</p>
+        </div>
+        <div id="chat-container"></div>
+    </div>
+    <div id="user-input">
+        <input type="text" id="message" placeholder="Type your message here" onkeydown="handleKeyPress(event)">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const messageInput = document.getElementById("message");
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, "user");
+            messageInput.value = "";
+
+            const response = await fetch("/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ message })
+            });
+            const data = await response.json();
+            addMessage(data.response, "chatbot");
+        }
+
+        function addMessage(text, sender) {
+            const chatContainer = document.getElementById("chat-container");
+            const messageElement = document.createElement("div");
+            messageElement.className = `message-container ${sender}`;
+            if (sender === "user") {
+                messageElement.innerHTML = `<div class="message user"><div class="message-bubble">${text}</div></div>`;
+            } else {
+                messageElement.innerHTML = `
+                    <div class="message chatbot">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpRfU6lKtrjivRIsmAREj06pg-IkTUQ1ucAHP6zbBN2OeJMT2nB04o2sDZoDu0VKw6wHA&usqp=CAU" alt="Chatbot Profile Picture" class="profile-pic">
+                        <div class="message-bubble">${text}</div>
+                    </div>`;
+            }
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        }
+    </script>
+</body>
+
+</html>
